@@ -12,78 +12,91 @@ public class TodoService : ITodoService
         this.db = db;
     }
 
-    public GetNewsDto GetTodos(int page, int perPage, bool? status)
+    public async Task<GetNewsDto> GetTodosAsync(int page, int perPage, bool? status)
     {
-        GetNewsDto getNewsDto = new GetNewsDto();   
+        
         List<TodoItem> todoItems = new List<TodoItem>();
         
         if(status == null)
         {
-            todoItems = db.Items().Skip((page - 1) * perPage).Take(perPage).ToList();
+            var asyncItems = db.ItemsAsync();
+            await asyncItems;
+
+            todoItems = asyncItems.Result.Skip((page - 1) * perPage).Take(perPage).ToList();
         }
         else if(status == true)
         {
-            todoItems = db.Items().Skip((page - 1) * perPage).Take(perPage).Where(i => i.Status == true).ToList();
+            var asyncItems = db.ItemsAsync();
+            await asyncItems;
+
+            todoItems = asyncItems.Result.Skip((page - 1) * perPage).Take(perPage).Where(i => i.Status == true).ToList();
         }
         else if(status == false)
         {
-            todoItems = db.Items().Skip((page - 1) * perPage).Where(i => i.Status == false).Take(perPage).ToList();
+            var asyncItems = db.ItemsAsync();
+            await asyncItems;
+
+            todoItems = asyncItems.Result.Skip((page - 1) * perPage).Where(i => i.Status == false).Take(perPage).ToList();
         }
+
+        GetNewsDto getNewsDto = new GetNewsDto()
+        {
+            Content = todoItems,
+            Ready = db.ItemsAsync().Result.Where(i => i.Status == true).Count(),
+            NotReady = db.ItemsAsync().Result.Where(i => i.Status == false).Count(),
+            NumberOfElements = db.ItemsAsync().Result.Count(),
+        };   
         
-        getNewsDto.Content = todoItems;
-        getNewsDto.Ready = db.Items().Where(i => i.Status == true).Count();
-        getNewsDto.NotReady = db.Items().Where(i => i.Status == false).Count();
-        getNewsDto.NumberOfElements = db.Items().Count();
 
         return getNewsDto;
     }
     
-    public void UpdateStatus(Int64 id, ChangeStatusTodoDto status)
+    public async Task UpdateStatusAsync(Int64 id, ChangeStatusTodoDto status)
     {
-        TodoItem todoItem = db.Items().Where(i => i.Id == id).FirstOrDefault();
+        TodoItem? todoItem = db.ItemsAsync().Result.Where(i => i.Id == id).FirstOrDefault();
 
         todoItem.Status = status.Status;
    
         db.Update(todoItem);
-        db.Save();
+        await db.SaveAsync();
     }
 
-    public void UpdateAllStatus(ChangeStatusTodoDto status)
+    public async Task UpdateAllStatusAsync(ChangeStatusTodoDto status)
     {
-        db.UpdateAll(db.Items(), status);
-        db.Save();
+        db.UpdateAll(db.ItemsAsync().Result, status);
+        await db.SaveAsync();
     }
 
-    public void DeleteItemById(Int64 id)
+    public async Task DeleteItemById(Int64 id)
     {
-        TodoItem todoItem = db.Items().Where(i => i.Id == id).FirstOrDefault();
+        TodoItem? todoItem = db.ItemsAsync().Result.Where(i => i.Id == id).FirstOrDefault();
 
         db.Delete(todoItem);
-        db.Save();
+        await db.SaveAsync();
     }
 
-    public void DeleteAllItems()
+    public async Task DeleteAllItems()
     {
-        db.DeleteAll(db.Items());
-        db.Save();
+        db.DeleteAll(db.ItemsAsync().Result);
+        await db.SaveAsync();
     }
     
-    public void PatchItemText(Int64 id, ChangeTextTodoDto task)
+    public async Task PatchItemText(Int64 id, ChangeTextTodoDto task)
     {
-        TodoItem todoItem = db.Items().Where(i => i.Id == id).FirstOrDefault();
+        TodoItem? todoItem = db.ItemsAsync().Result.Where(i => i.Id == id).FirstOrDefault();
 
         todoItem.Text = task.Text;
 
         db.Update(todoItem);
-        db.Save();
+        await db.SaveAsync();
     }
 
-    public TodoItem CreateTodoItem(CreateTodoDto createTodoDto)
+    public async Task<TodoItem> CreateTodoItem(CreateTodoDto createTodoDto)
     {
         var todoItem = DtoToItem(createTodoDto);
 
-        db.Add(todoItem);
-        db.Save();
+        await db.AddAsync(todoItem);
+        await db.SaveAsync();
 
         return todoItem;
     }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.DTO;
 using TodoList.Models.DTO;
@@ -8,19 +9,20 @@ namespace Repository;
 
 public class PostgresRepository(TodoContext _todoContext) : IRepository
 {
-    public void Add(TodoItem todoItem)
+    public async Task AddAsync(TodoItem todoItem)
     {
-        _todoContext.Add(todoItem);
+        await _todoContext.AddAsync(todoItem);
     }
 
-    public void Save()
+    public async Task SaveAsync()
     {
-        _todoContext.SaveChanges();
+        await _todoContext.SaveChangesAsync();
     }
 
-    public List<TodoItem> Items()
+    public async Task<List<TodoItem>> ItemsAsync()
     {
-        return _todoContext.TodoItems.ToList();
+        return await _todoContext.TodoItems.ToListAsync();
+
     }
 
     public void Update(TodoItem todoItem)

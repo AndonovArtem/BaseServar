@@ -9,9 +9,9 @@ namespace Repository;
 
 public interface IRepository
 {   
-    public void Add(TodoItem todoItem);
-    public void Save();
-    public List<TodoItem> Items();
+    public Task AddAsync(TodoItem todoItem);
+    public Task SaveAsync();
+    public Task<List<TodoItem>> ItemsAsync();
     public void Update(TodoItem todoItem);
     public void UpdateAll(List<TodoItem> todoItems, ChangeStatusTodoDto task);    
     public void DeleteAll(List<TodoItem>  todoItems);

@@ -16,10 +16,10 @@ public class TodoController(ITodoService service) : ControllerBase
     {
         try
         {
-            var getNewsDto = service.GetTodos(page, perPage, status);
+            var getNewsDto = service.GetTodosAsync(page, perPage, status);
 
             return new CustomSuccessResponse { 
-                Data = getNewsDto,
+                Data = getNewsDto.Result,
                 StatusCode = 1,
                 Success = true,
             };
@@ -39,7 +39,7 @@ public class TodoController(ITodoService service) : ControllerBase
     {
         try
         {
-            service.UpdateStatus(id, task);
+            await service.UpdateStatusAsync(id, task);
             return Ok(new BaseSuccessResponse {
                 StatusCode = 1,
                 Success = true,
@@ -64,7 +64,7 @@ public class TodoController(ITodoService service) : ControllerBase
     {
         try
         {
-            service.UpdateAllStatus(status);
+            await service.UpdateAllStatusAsync(status);
 
             return Ok(new BaseSuccessResponse {
                 StatusCode = 1,
@@ -89,7 +89,7 @@ public class TodoController(ITodoService service) : ControllerBase
     {
         try
         {
-            service.DeleteAllItems();
+            await service.DeleteAllItems();
 
             return Ok(new BaseSuccessResponse {
                 StatusCode = 1,
@@ -115,7 +115,7 @@ public class TodoController(ITodoService service) : ControllerBase
     {
         try
         {
-            service.DeleteItemById(id);
+            await service.DeleteItemById(id);
             
             return Ok(new BaseSuccessResponse {
                 StatusCode = 1,
@@ -141,7 +141,7 @@ public class TodoController(ITodoService service) : ControllerBase
     {
         try
         {
-            service.PatchItemText(id, task);
+            await service.PatchItemText(id, task);
             
             return Ok(new BaseSuccessResponse {
                 StatusCode = 1,
@@ -164,8 +164,9 @@ public class TodoController(ITodoService service) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TodoItem>> CreateTodoItem(CreateTodoDto createdItem)
     {
-        var todoItem = service.CreateTodoItem(createdItem);
-        
-        return todoItem;
+        var  todoItem = service.CreateTodoItem(createdItem);
+        await todoItem;
+
+        return todoItem.Result;
     }
 }
