@@ -1,0 +1,7 @@
+**/bin
+**/obj
+**/wwwroot
+**/Migrations
+**/.vscode
+**/.vs
+**/.env
